@@ -2,8 +2,9 @@ import os
 import sqlite3
 import streamlit as st
 import google.generativeai as genai
+import pandas as pd 
 
-genai.configure(api_key='AIzaSyDNwP-ueLjKVZRoC8qy7zoGZiZTHAbLZgw')
+genai.configure(api_key={apikey})
 
 def get_gemini_response(question,prompt):
     model=genai.GenerativeModel('gemini-pro')
@@ -21,24 +22,25 @@ def read_sql_query(sql,db):
         print(row)
     return rows
 
-prompt=[
+prompt = [
     """
-    You are an expert in converting English questions to SQL query!
-    The SQL database has the name students and has the following columns - Student_ID,	Name,	Gender,	Age,	GPA,	Major,	Interested_Domain,	Projects,	Future_Career,	Python,	SQL,	Java
-     \n\nFor example,\nExample 1 - How many entries of records are present?, 
-    the SQL command will be something like this SELECT COUNT(*) FROM students ;
-    \nExample 2 - Tell me all the students studying in Computer Science Major?, 
-    the SQL command will be something like this SELECT * FROM STUDENT 
-    where Major="Computer Science"; 
-    also the sql code should not have ``` in beginning or end and sql word in output
+    You're an expert in converting English questions into SQL queries! 
+    The SQL database is named "students" and has the following columns: 
+    Student_ID, Name, Gender, Age, GPA, Major, Interested_Domain, Projects, Future_Career, Python, SQL, Java.
 
+    Examples:
+    1. If the question is "How many entries of records are present?", 
+       the SQL query would be: SELECT COUNT(*) FROM students;
+
+    2. If the question is "Tell me all the students studying in Computer Science Major?", 
+       the SQL query would be: SELECT * FROM students WHERE Major = "Computer Science";
+
+    Note: Don't include SQL keywords in the output, and make sure the SQL code doesn't have backticks (`) at the beginning or end.
     """
-
 ]
-# Set page configuration
-st.set_page_config(page_title="I can Retrieve Any SQL query")
 
-# Apply dark theme
+st.set_page_config(page_title="Gemini App: Retrieve Any SQL Query")
+
 st.markdown(
     """
     <style>
@@ -69,20 +71,16 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Header
-st.header("Gemini App To Retrieve SQL Data")
+st.header("Talk to database")
 
-# Input field
-question = st.text_input("Input: ", key="input")
+question = st.text_input("What's your query? (e.g., How many students are there?)", key="input")
+submit = st.button("Ask the Question")
 
-# Submit button
-submit = st.button("Ask the question")
-
-# Handle submit action
 if submit:
     response = get_gemini_response(question, prompt)
-    print(response)
     response = read_sql_query(response, "students.db")
-    single_array = [item for sublist in response for item in sublist]
-    st.subheader("The Response is")
-    st.write(single_array)
+    
+    df = pd.DataFrame(response, columns=['Student_ID', 'Name', 'Gender', 'Age', 'GPA', 'Major', 'Interested_Domain', 'Projects', 'Future_Career', 'Python', 'SQL', 'Java'])
+    
+    st.subheader("Here's your SQL Query Result:")
+    st.table(df)
