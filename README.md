@@ -90,7 +90,7 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 ## Contact
 
-For any inquiries or issues, feel free to reach out at your-email@example.com.
+For any inquiries or issues, feel free to reach out at rugvedp00@gmail.com.
 
 ---
 
